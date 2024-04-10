@@ -2,7 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 
-    id ("kotlin-kapt")
+    kotlin("kapt")
     id ("com.google.dagger.hilt.android")
     id ("androidx.navigation.safeargs.kotlin")
     id ("kotlin-android-extensions")
@@ -73,7 +73,7 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
 
     // Hilt
-    val hiltVersion = "2.41"
+    val hiltVersion = "2.44"
     implementation ("com.google.dagger:hilt-android:$hiltVersion")
     kapt ("com.google.dagger:hilt-compiler:$hiltVersion")
 
@@ -87,7 +87,7 @@ dependencies {
     implementation ("com.squareup.okhttp3:logging-interceptor:$okhttpVersion")
 
     // Navigation Components
-    val navVersion = "2.4.2"
+    val navVersion = "2.5.3"
     implementation ("androidx.navigation:navigation-fragment-ktx:$navVersion")
     implementation ("androidx.navigation:navigation-ui-ktx:$navVersion")
 
