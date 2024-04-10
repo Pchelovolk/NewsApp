@@ -7,8 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.study.newsapp.databinding.FragmentMainBinding
+import com.study.newsapp.ui.adapters.NewsAdapter
+import com.study.newsapp.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.fragment_main.news_adapter
+import kotlinx.android.synthetic.main.fragment_main.progress_bar
 
 
 @AndroidEntryPoint
@@ -18,6 +23,7 @@ class MainFragment : Fragment() {
     private val mBinding get() = binding!!
 
     private val viewModel : MainViewModel by  viewModels<MainViewModel>()
+    lateinit var newsAdapter: NewsAdapter
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -28,11 +34,35 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d("MainFragment", "onViewCreated: ViewModel loading started") // Отладочное сообщение при начале загрузки ViewModel
-        try {
-            viewModel.all
-        } catch (e: Exception) {
-            Log.e("MainFragment", "onViewCreated: ViewModel loading failed", e) // Отладочное сообщение в случае ошибки загрузки ViewModel
+        initAdapter()
+        viewModel.newsLiveData.observe(viewLifecycleOwner){
+            response ->
+            when(response){
+                is Resource.Success -> {
+                   progress_bar.visibility = View.INVISIBLE
+                   response.data?.let {
+                       newsAdapter.differ.submitList(it.articles)
+                   }
+                }
+                is Resource.Error -> {
+                    progress_bar.visibility = View.INVISIBLE
+                    response.data?.let {
+                        Log.e("checkData", "MainFragment error: ${it}")
+                    }
+                }
+
+                is Resource.Loading -> {
+                    progress_bar.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private fun initAdapter(){
+        newsAdapter = NewsAdapter()
+        news_adapter.apply {
+            adapter = newsAdapter
+            layoutManager = LinearLayoutManager(activity)
         }
     }
 }

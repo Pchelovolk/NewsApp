@@ -1,38 +1,35 @@
 package com.study.newsapp.ui.main
 
-import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.study.newsapp.data.api.TestRepository
+import com.study.newsapp.data.api.NewsRepository
 import com.study.newsapp.models.NewsResponse
+import com.study.newsapp.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
-class MainViewModel @Inject constructor(private val repository: TestRepository) : ViewModel(){
+class MainViewModel @Inject constructor(private val repository: NewsRepository) : ViewModel(){
 
-    private val _all = MutableLiveData<NewsResponse>()
-    val all : LiveData<NewsResponse>
-        get() = _all
+    val newsLiveData : MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
+    var newsPage = 1
 
     init {
-        Log.d("MainViewModel", "init: Loading data")
-        getAll()
+        getNews("us")
     }
 
-    fun getAll() = viewModelScope.launch {
-        Log.d("MainViewModel", "getAll: Fetching data from repository")
-        repository.getAll().let {
-            if (it.isSuccessful){
-                Log.d("MainViewModel", "getAll: Data fetch successful")
-                _all.postValue(it.body())
-            } else {
-                Log.d ("checkData", "Failed to load articles: ${it.errorBody()}")
+    private fun getNews(countryCode: String)=
+        viewModelScope.launch {
+            newsLiveData.postValue(Resource.Loading())
+            val response = repository.getNews(countryCode = countryCode, pageNumber = newsPage)
+            if (response.isSuccessful) {
+                response.body().let { res ->
+                    newsLiveData.postValue(Resource.Success(res))
+                }
+            }else{
+                newsLiveData.postValue(Resource.Error(message = response.message()))
             }
         }
-    }
 }
